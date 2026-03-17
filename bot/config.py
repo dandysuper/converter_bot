@@ -10,9 +10,11 @@ class Settings(BaseSettings):
     CRYPTOBOT_TOKEN: Optional[str] = None
     WEBAPP_URL: Optional[str] = None  # Your Railway app public URL for mini-apps
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "extra": "ignore",
+    }
 
 
 settings = Settings()
