@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Color</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: sans-serif;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #222);
+            padding: 16px;
+        }
+        h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: var(--tg-theme-hint-color, #888);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .section { margin-bottom: 24px; }
+        .section-label { font-size: 13px; color: var(--tg-theme-hint-color, #888); margin-bottom: 10px; }
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+        .color-swatch {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: border-color 0.15s, transform 0.1s;
+        }
+        .color-swatch:active { transform: scale(0.92); }
+        .color-swatch.selected { border-color: var(--tg-theme-button-color, #2196F3); }
+
+        .custom-section { margin-top: 20px; }
+        .color-input-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        input[type="color"] {
+            width: 50px; height: 50px;
+            border: none; border-radius: 50%;
+            cursor: pointer; padding: 0;
+            background: none;
+        }
+        #hexInput {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--tg-theme-hint-color, #ccc);
+            background: var(--tg-theme-secondary-bg-color, #f4f4f4);
+            color: var(--tg-theme-text-color, #222);
+            font-size: 16px;
+            font-family: monospace;
+        }
+
+        .preview-box {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 12px;
+            background: #333;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <h2>🎨 Choose Watermark Color</h2>
+
+    <div class="section">
+        <div class="section-label">Quick picks</div>
+        <div class="preset-grid" id="presetGrid"></div>
+    </div>
+
+    <div class="custom-section section">
+        <div class="section-label">Custom color</div>
+        <div class="color-input-row">
+            <input type="color" id="colorPicker" value="#ffffff">
+            <input type="text" id="hexInput" placeholder="#FFFFFF" maxlength="7">
+        </div>
+    </div>
+
+    <div class="preview-box">
+        <span id="previewText" style="color: #ffffff; text-shadow: 1px 1px 2px #000;">Watermark</span>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const presets = [
+            "#FFFFFF", "#000000", "#FF5252", "#FF6D00",
+            "#FFD600", "#69F0AE", "#40C4FF", "#E040FB",
+            "#FF80AB", "#CCFF90", "#84FFFF", "#F8BBD9",
+            "#FFCC02", "#00BCD4", "#8BC34A", "#9C27B0",
+            "#F44336", "#3F51B5", "#009688", "#795548",
+            "#607D8B", "#FFC107", "#FF9800", "#CDDC39",
+        ];
+
+        let currentColor = "#FFFFFF";
+
+        function setColor(hex, swatchEl = null) {
+            currentColor = hex;
+            document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("selected"));
+            if (swatchEl) swatchEl.classList.add("selected");
+            document.getElementById("colorPicker").value = hex;
+            document.getElementById("hexInput").value = hex.toUpperCase();
+            document.getElementById("previewText").style.color = hex;
+            tg.MainButton.setText(`✅ Use ${hex.toUpperCase()}`);
+            tg.MainButton.show();
+        }
+
+        const grid = document.getElementById("presetGrid");
+        presets.forEach(color => {
+            const div = document.createElement("div");
+            div.className = "color-swatch";
+            div.style.background = color;
+            div.addEventListener("click", () => setColor(color, div));
+            grid.appendChild(div);
+        });
+
+        document.getElementById("colorPicker").addEventListener("input", e => {
+            setColor(e.target.value);
+        });
+
+        document.getElementById("hexInput").addEventListener("input", e => {
+            const val = e.target.value;
+            if (/^#[0-9A-Fa-f]{6}$/.test(val)) setColor(val);
+        });
+
+        tg.MainButton.setText("✅ Use Color");
+        tg.MainButton.onClick(() => {
+            tg.sendData(JSON.stringify({ color: currentColor }));
+            tg.close();
+        });
+    </script>
+</body>
+</html>

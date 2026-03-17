@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Font</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Roboto&family=Montserrat&family=Lobster&family=Oswald&family=Pacifico&family=Dancing+Script&family=Raleway&family=Ubuntu&family=Nunito&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: sans-serif;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #222);
+            padding: 16px;
+        }
+        h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: var(--tg-theme-hint-color, #888);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .font-list { display: flex; flex-direction: column; gap: 10px; }
+        .font-item {
+            padding: 14px 16px;
+            border-radius: 12px;
+            background: var(--tg-theme-secondary-bg-color, #f4f4f4);
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            font-size: 20px;
+        }
+        .font-item:active { transform: scale(0.97); }
+        .font-item.selected {
+            background: var(--tg-theme-button-color, #2196F3);
+            color: var(--tg-theme-button-text-color, #fff);
+        }
+        .preview-text { font-size: 20px; }
+    </style>
+</head>
+<body>
+    <h2>🔤 Choose a Font</h2>
+    <div class="font-list" id="fontList"></div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const fonts = [
+            { name: "Roboto", label: "Roboto" },
+            { name: "Montserrat", label: "Montserrat" },
+            { name: "Playfair Display", label: "Playfair Display" },
+            { name: "Oswald", label: "Oswald" },
+            { name: "Raleway", label: "Raleway" },
+            { name: "Ubuntu", label: "Ubuntu" },
+            { name: "Nunito", label: "Nunito" },
+            { name: "Lobster", label: "Lobster" },
+            { name: "Pacifico", label: "Pacifico" },
+            { name: "Dancing Script", label: "Dancing Script" },
+        ];
+
+        const list = document.getElementById("fontList");
+        let selected = null;
+
+        fonts.forEach(f => {
+            const div = document.createElement("div");
+            div.className = "font-item";
+            div.innerHTML = `<span class="preview-text" style="font-family: '${f.name}', sans-serif;">Aa — ${f.label}</span>`;
+            div.addEventListener("click", () => {
+                if (selected) selected.classList.remove("selected");
+                div.classList.add("selected");
+                selected = div;
+                tg.MainButton.setText(`✅ Use ${f.label}`);
+                tg.MainButton.show();
+                tg.MainButton.onClick(() => {
+                    tg.sendData(JSON.stringify({ font: f.name }));
+                    tg.close();
+                });
+            });
+            list.appendChild(div);
+        });
+    </script>
+</body>
+</html>
