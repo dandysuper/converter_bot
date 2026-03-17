@@ -102,6 +102,8 @@ async def handle_format_selection(callback: types.CallbackQuery, state: FSMConte
         result_bytes = await converter_service.convert_sticker(
             file_bytes=file_bytes,
             output_format=fmt,
+            is_animated=data.get("is_animated", False),
+            is_video=data.get("is_video", False),
             watermark_text=watermark_text,
             font_name=font_name,
             font_color=font_color,
@@ -136,12 +138,14 @@ async def handle_format_selection(callback: types.CallbackQuery, state: FSMConte
         await callback.message.edit_text("✅ Done!")
 
     except Exception as e:
-        logger.error(f"Conversion error: {e}", exc_info=True)
+        logger.error(f"Conversion error for user {callback.from_user.id}: {e}", exc_info=True)
         # Refund on error
         from services.database import add_balance
         await add_balance(callback.from_user.id, settings.PAYMENT_RATE, "Refund – conversion error")
+        error_detail = str(e)[:200]
         await callback.message.edit_text(
-            "❌ Conversion failed. Your balance has been refunded.\n"
+            f"❌ Conversion failed. Your balance has been refunded.\n\n"
+            f"<code>{error_detail}</code>\n\n"
             "Please try again or contact support."
         )
 
